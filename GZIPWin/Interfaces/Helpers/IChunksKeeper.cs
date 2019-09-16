@@ -10,5 +10,6 @@ namespace GZIPWin.Interfaces.Helpers
         void AddProcessedChunk(Chunk chunk);
         Chunk GetChunk();
         Chunk GetProcessedChunk(int index);
+        bool ContainsProcessedChunk(int index);
     }
 }

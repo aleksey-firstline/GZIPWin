@@ -36,15 +36,15 @@ namespace GZIPWinConsole
 
             _threadHandler.StartTrackingChunks(HandelException);
 
-            _threadHandler.ExecuteInThread(condition =>
+            _threadHandler.ExecuteInThreadReadChunks(condition =>
             {
                 var reader = new FileReader(processModel.SourceFile);
-                _processService.ReadFile(condition, reader);
+                return _processService.ReadFile(condition, reader);
 
             }, HandelException);
 
 
-            _threadHandler.ExecuteInThread(condition =>
+            _threadHandler.ExecuteInThreadSaveChunks(condition =>
             {
                 var fileWriter = new FileWriter(processModel.ResultFile);
                 _processService.SaveTo(condition, fileWriter);

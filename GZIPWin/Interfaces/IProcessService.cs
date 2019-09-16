@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using GZIPWin.Helpers;
 using GZIPWin.Interfaces.Helpers;
@@ -9,8 +10,8 @@ namespace GZIPWin.Interfaces
 {
     public interface IProcessService
     {
-        void ReadFile(Func<bool> condition, IFileReader fileReader);
-        void SaveTo(Func<bool> condition, IFileWriter fileWriter);
+        IEnumerable<Chunk> ReadFile(Func<bool> condition, IFileReader fileReader);
+        void SaveTo(IEnumerable<Chunk> chunks, IFileWriter fileWriter);
         Chunk ProcessChunk(Chunk chunk);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GZIPWin.Exceptions;
 using GZIPWin.Interfaces;
@@ -10,12 +11,12 @@ namespace GZIPWin.Services
     public class DecompressService : BaseProcessService
     {
 
-        public DecompressService(IGzipService gzipService, IChunksKeeper chunksKeeper) 
+        public DecompressService(IGzipService gzipService, IChunksKeeper chunksKeeper)
             : base(gzipService, chunksKeeper)
         {
         }
 
-        public override void ReadFile(Func<bool> condition, IFileReader fileReader)
+        public override IEnumerable<Chunk> ReadFile(Func<bool> condition, IFileReader fileReader)
         {
             if (condition == null)
             {
@@ -62,42 +63,28 @@ namespace GZIPWin.Services
 
                     offset += chunkSize;
 
-                    _chunksKeeper.AddChunk(new Chunk(index++, compressedBytes, initialLength, initialFileLength));
+                    var chunk = new Chunk(index++, compressedBytes, initialLength, initialFileLength);
+
+                    yield return chunk;
 
                 } while (condition.Invoke() && offset < fileLength - Int64Size);
             }
         }
 
-        public override void SaveTo(Func<bool> condition, IFileWriter fileWriter)
+        public override void SaveTo(IEnumerable<Chunk> chunks, IFileWriter fileWriter)
         {
-            if (condition == null)
-            {
-                throw new ArgumentNullException(nameof(condition));
-            }
-
             if (fileWriter == null)
             {
                 throw new ArgumentNullException(nameof(fileWriter));
             }
 
-            var index = 0;
-            long totalLength = 0;
             using (fileWriter)
             {
-                while (condition.Invoke())
+                foreach (var item in chunks)
                 {
-                    var item = _chunksKeeper.GetProcessedChunk(index); 
                     if (item != null)
                     {
-                        totalLength += item.Length;
                         fileWriter.Write(item.Buffer, item.Length);
-
-                        if (totalLength >= item.FileLength)
-                        {
-                            break;
-                        }
-
-                        index++;
                     }
                 }
             }
